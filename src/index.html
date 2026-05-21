@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>tactions</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Custom Title Bar -->
+  <header id="titlebar" data-tauri-drag-region>
+    <div class="titlebar-left" data-tauri-drag-region>
+      <div class="app-logo">
+        <img src="assets/tactions.png" alt="tactions" width="20" height="20" />
+      </div>
+      <span class="app-title">tactions</span>
+      <span class="app-subtitle">GitHub Actions Monitor</span>
+    </div>
+    <div class="titlebar-controls">
+      <button id="btn-minimize" class="titlebar-btn" title="Minimize">
+        <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="5" x2="10" y2="5" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+      <button id="btn-maximize" class="titlebar-btn" title="Maximize">
+        <svg width="10" height="10" viewBox="0 0 10 10"><rect x="0.5" y="0.5" width="9" height="9" stroke="currentColor" fill="none" stroke-width="1"/></svg>
+      </button>
+      <button id="btn-close" class="titlebar-btn btn-close" title="Close">
+        <svg width="10" height="10" viewBox="0 0 10 10"><line x1="0" y1="0" x2="10" y2="10" stroke="currentColor" stroke-width="1.5"/><line x1="10" y1="0" x2="0" y2="10" stroke="currentColor" stroke-width="1.5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <main id="app">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div class="sidebar-header">
+        <h2>Repositories</h2>
+        <button id="btn-add-repo" class="btn-icon" title="Add Repository">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </button>
+      </div>
+      <div id="repo-list" class="repo-list">
+        <!-- Repos will be added here dynamically -->
+        <div class="empty-state" id="empty-repos">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          <p>No repositories added</p>
+          <span>Click + to add a repository</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content -->
+    <section id="content">
+      <!-- Welcome Screen -->
+      <div id="welcome-screen" class="welcome-screen">
+        <div class="welcome-icon">
+          <img src="assets/tactions.png" alt="tactions" width="80" height="80" />
+        </div>
+        <h1>tactions</h1>
+        <p>Monitor your GitHub Actions workflows</p>
+        <div class="welcome-steps">
+          <div class="step">
+            <span class="step-num">1</span>
+            <span>Add a repository using the + button</span>
+          </div>
+          <div class="step">
+            <span class="step-num">2</span>
+            <span>View workflow runs and their status</span>
+          </div>
+          <div class="step">
+            <span class="step-num">3</span>
+            <span>Inspect logs and identify errors</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Workflow Runs View -->
+      <div id="runs-view" class="view hidden">
+        <div class="view-header">
+          <div class="view-header-left">
+            <h2 id="runs-repo-name"></h2>
+            <span id="runs-repo-desc" class="text-muted"></span>
+          </div>
+          <div class="view-header-right">
+            <button id="btn-refresh-runs" class="btn-secondary" title="Refresh">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/>
+                <path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/>
+              </svg>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+        <div id="runs-list" class="runs-list">
+          <!-- Runs will be populated here -->
+        </div>
+      </div>
+
+      <!-- Job Detail View -->
+      <div id="job-view" class="view hidden">
+        <div class="view-header">
+          <button id="btn-back-to-runs" class="btn-back">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            <span>Back to runs</span>
+          </button>
+          <div class="view-header-left">
+            <h2 id="job-run-name"></h2>
+            <span id="job-run-info" class="text-muted"></span>
+          </div>
+        </div>
+        <div id="jobs-list" class="jobs-list">
+          <!-- Jobs will be populated here -->
+        </div>
+      </div>
+
+      <!-- Log View -->
+      <div id="log-view" class="view hidden">
+        <div class="view-header">
+          <button id="btn-back-to-jobs" class="btn-back">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+            <span>Back to jobs</span>
+          </button>
+          <div class="view-header-left">
+            <h2 id="log-job-name"></h2>
+          </div>
+          <div class="view-header-right">
+            <label class="toggle-label">
+              <input type="checkbox" id="toggle-errors-only" />
+              <span class="toggle-text">Errors only</span>
+            </label>
+          </div>
+        </div>
+        <pre id="log-content" class="log-content"><code></code></pre>
+      </div>
+    </section>
+  </main>
+
+  <!-- Add Repo Modal -->
+  <div id="modal-overlay" class="modal-overlay hidden">
+    <div class="modal">
+      <div class="modal-header">
+        <h3>Add Repository</h3>
+        <button id="btn-close-modal" class="btn-icon">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="input-repo">Repository</label>
+          <input type="text" id="input-repo" placeholder="owner/repository" autocomplete="off" spellcheck="false" />
+          <span class="form-hint">Enter as owner/repo (e.g. rust-lang/rust)</span>
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-label">
+            <input type="checkbox" id="check-private" />
+            <span class="checkmark"></span>
+            <span>Private repository</span>
+          </label>
+        </div>
+
+        <!-- Auth Status (shown when private is checked) -->
+        <div id="auth-status" class="auth-status hidden">
+          <div id="auth-checking" class="status-item hidden">
+            <div class="spinner"></div>
+            <span>Checking gh authentication...</span>
+          </div>
+          <div id="auth-ok" class="status-item status-ok hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span id="auth-ok-text">Authenticated</span>
+          </div>
+          <div id="auth-fail" class="status-item status-fail hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            <span>Not authenticated. Please run <code>gh auth login</code> in your terminal.</span>
+          </div>
+        </div>
+
+        <!-- Repo Validation Status -->
+        <div id="repo-status" class="repo-status hidden">
+          <div id="repo-checking" class="status-item hidden">
+            <div class="spinner"></div>
+            <span>Checking repository...</span>
+          </div>
+          <div id="repo-ok" class="status-item status-ok hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span id="repo-ok-text">Repository found</span>
+          </div>
+          <div id="repo-fail" class="status-item status-fail hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>
+            </svg>
+            <span id="repo-fail-text">Repository not found</span>
+          </div>
+          <div id="repo-no-actions" class="status-item status-warn hidden">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            <span>No GitHub Actions workflows found in this repository.</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button id="btn-cancel-add" class="btn-secondary">Cancel</button>
+        <button id="btn-confirm-add" class="btn-primary" disabled>Add Repository</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="spinner-large"></div>
+    <span id="loading-text">Loading...</span>
+  </div>
+
+  <script src="main.js"></script>
+</body>
+</html>
