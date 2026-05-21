@@ -1,0 +1,13 @@
+{
+  "name": "tactions",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "tauri": "tauri",
+    "dev": "WEBKIT_DISABLE_DMABUF_RENDERER=1 tauri dev"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2"
+  }
+}
