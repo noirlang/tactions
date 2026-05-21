@@ -18,7 +18,6 @@
 
 ## 🎥 Demo
 
-*Add your demo video/animation here!*
 <!-- Replace the line below with your video or GIF -->
 <p align="center">
   <video src="https://github.com/user-attachments/assets/c521d9af-9c45-4821-b913-732493167d04" width="100%" controls autoplay loop muted></video>
