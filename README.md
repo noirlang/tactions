@@ -10,7 +10,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/PRs-welcome-E8E8E8?style=flat-square&labelColor=161616&color=FFFFFF" alt="PRs Welcome" />
-  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20macOS%20%7C%20Windows-E8E8E8?style=flat-square&labelColor=161616&color=FFFFFF" alt="Platform Support" />
+  <img src="https://img.shields.io/badge/Platform-Linux%20%7C%20Windows-E8E8E8?style=flat-square&labelColor=161616&color=FFFFFF" alt="Platform Support" />
   <img src="https://img.shields.io/badge/Built%20with-Rust%20%26%20Tauri-E8E8E8?style=flat-square&labelColor=161616&color=FFFFFF" alt="Built with Rust & Tauri" />
 </p>
 

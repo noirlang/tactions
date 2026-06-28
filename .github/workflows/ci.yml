@@ -105,14 +105,12 @@ jobs:
           mkdir -p release-assets
           for f in dist/tactions-linux-x64.*; do
             [ -f "$f" ] || continue
-            ext="${f##*.}"
-            case "$ext" in
-              AppImage) label="linux-x64.AppImage" ;;
-              deb)      label="linux-x64.deb" ;;
-              rpm)      label="linux-x64.rpm" ;;
-              *)        continue ;;
+            case "$f" in
+              *.AppImage)    cp "$f" "release-assets/tactions-${ASSET_SUFFIX}-linux-x64.AppImage" ;;
+              *.deb)         cp "$f" "release-assets/tactions-${ASSET_SUFFIX}-linux-x64.deb" ;;
+              *.rpm)         cp "$f" "release-assets/tactions-${ASSET_SUFFIX}-linux-x64.rpm" ;;
+              *.pkg.tar.zst) cp "$f" "release-assets/tactions-${ASSET_SUFFIX}-linux-x64.pkg.tar.zst" ;;
             esac
-            cp "$f" "release-assets/tactions-${ASSET_SUFFIX}-${label}"
           done
 
       - name: Upload Linux packages
@@ -230,6 +228,7 @@ jobs:
           - Linux AppImage
           - Debian/Ubuntu DEB
           - Fedora/RHEL RPM
+          - Arch Linux package
           - Windows x64 MSI
 
           This is an unsigned prerelease generated from a development commit.
