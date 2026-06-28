@@ -65,10 +65,9 @@ pub struct AddRepoResult {
 #[tauri::command]
 fn check_gh_auth() -> Result<GhAuthStatus, String> {
     // Check if gh is installed
-    let gh_check = Command::new("gh")
-        .arg("--version")
-        .output()
-        .map_err(|_| "gh CLI is not installed. Please install it from https://cli.github.com".to_string())?;
+    let gh_check = Command::new("gh").arg("--version").output().map_err(|_| {
+        "gh CLI is not installed. Please install it from https://cli.github.com".to_string()
+    })?;
 
     if !gh_check.status.success() {
         return Ok(GhAuthStatus {
@@ -108,7 +107,8 @@ fn extract_username(text: &str) -> Option<String> {
     for line in text.lines() {
         if let Some(pos) = line.find("account ") {
             let rest = &line[pos + 8..];
-            let username: String = rest.chars()
+            let username: String = rest
+                .chars()
                 .take_while(|c| !c.is_whitespace() && *c != '(' && *c != ')')
                 .collect();
             if !username.is_empty() {
@@ -123,30 +123,47 @@ fn extract_username(text: &str) -> Option<String> {
 #[tauri::command]
 fn check_repo(repo: String) -> Result<RepoInfo, String> {
     let output = Command::new("gh")
-        .args(["repo", "view", &repo, "--json", "nameWithOwner,isPrivate,defaultBranchRef,description"])
+        .args([
+            "repo",
+            "view",
+            &repo,
+            "--json",
+            "nameWithOwner,isPrivate,defaultBranchRef,description",
+        ])
         .output()
         .map_err(|e| format!("Failed to check repository: {}", e))?;
 
     if !output.status.success() {
         let stderr = String::from_utf8_lossy(&output.stderr);
         if stderr.contains("not found") || stderr.contains("Could not resolve") {
-            return Err(format!("Repository '{}' not found or you don't have access.", repo));
+            return Err(format!(
+                "Repository '{}' not found or you don't have access.",
+                repo
+            ));
         }
         return Err(format!("Error checking repository: {}", stderr));
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout);
-    let json: serde_json::Value = serde_json::from_str(&stdout)
-        .map_err(|e| format!("Failed to parse repo info: {}", e))?;
+    let json: serde_json::Value =
+        serde_json::from_str(&stdout).map_err(|e| format!("Failed to parse repo info: {}", e))?;
 
     let full_name = json["nameWithOwner"].as_str().unwrap_or(&repo).to_string();
     let private = json["isPrivate"].as_bool().unwrap_or(false);
     let description = json["description"].as_str().map(|s| s.to_string());
-    let default_branch = json["defaultBranchRef"]["name"].as_str().unwrap_or("main").to_string();
+    let default_branch = json["defaultBranchRef"]["name"]
+        .as_str()
+        .unwrap_or("main")
+        .to_string();
 
     // Check if repo has actions by listing workflows
     let wf_output = Command::new("gh")
-        .args(["api", &format!("repos/{}/actions/workflows", full_name), "--jq", ".total_count"])
+        .args([
+            "api",
+            &format!("repos/{}/actions/workflows", full_name),
+            "--jq",
+            ".total_count",
+        ])
         .output()
         .map_err(|e| format!("Failed to check workflows: {}", e))?;
 
@@ -259,11 +276,7 @@ fn get_job_logs(repo: String, job_id: u64) -> Result<String, String> {
 #[tauri::command]
 fn rerun_workflow(repo: String, run_id: u64) -> Result<String, String> {
     let output = Command::new("gh")
-        .args([
-            "run", "rerun",
-            &run_id.to_string(),
-            "--repo", &repo,
-        ])
+        .args(["run", "rerun", &run_id.to_string(), "--repo", &repo])
         .output()
         .map_err(|e| format!("Failed to rerun workflow: {}", e))?;
 
